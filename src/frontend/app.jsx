@@ -578,7 +578,7 @@ async function* fetchInitialMessage(
     ? { noop: true, tts: isTortoiseOn }
     : { tts: isTortoiseOn, resume, jd, model };
 
-  const response = await fetch("/kick-off", {
+  const response = await fetch("/kick_off", {
     method: "POST",
     body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" },
@@ -701,11 +701,9 @@ function App() {
 
   const generateInitialMessage = useCallback(
       async (noop, resume, jd, model) => {
-        if (!noop) {
-          recorderNodeRef.current.stop();
-        }
-  
-        console.log("Generating initial message", input, history);
+        // if (!noop) {
+        //   recorderNodeRef.current.stop();
+        // }
   
         let firstAudioRecvd = false;
         for await (let { type, payload } of fetchInitialMessage(
@@ -748,7 +746,7 @@ function App() {
 
   useEffect(() => {
     if(resume && jobDesc) {
-      generateInitialMessage(noop, resume, jobDesc, model);
+      generateInitialMessage(false, resume, jobDesc, model);
     }
   }, [resume, jobDesc])
 

@@ -110,8 +110,8 @@ def web():
         def gen():
             sentence = ""
 
-            for segment in kick_off(candidate_profile=body["resume"],job_description=body["jd"],client=client):
-                yield {"type": "text", "value": segment}
+            for segment in kickoff(candidate_profile=body["resume"],job_description=body["jd"],client=client):
+                yield {"type": "text", "value": segment.text}
                 sentence += segment
 
                 for p in PUNCTUATION:
@@ -124,7 +124,9 @@ def web():
                 yield speak(sentence)
 
         def gen_serialized():
+        
             for i in gen():
+                print(i)
                 yield json.dumps(i) + "\x1e"
 
         return StreamingResponse(
