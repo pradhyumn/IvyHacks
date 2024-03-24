@@ -28,7 +28,7 @@ const chatMachine = createMachine(
     context: {
       pendingSegments: 0,
       transcript: "",
-      messages: 1,
+      messages: 0,
     },
     states: {
       botGenerating: {
@@ -748,7 +748,7 @@ function App() {
     if(resume && jobDesc) {
       generateInitialMessage(false, resume, jobDesc, model);
       // setHistory((h) => [...h, fullMessage]);
-      // setFullMessage("");
+      setFullMessage("");
       // setTypedMessage("");
 
       const transition = state.context.messages > history.length + 1;
