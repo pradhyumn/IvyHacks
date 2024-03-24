@@ -747,6 +747,7 @@ function App() {
   useEffect(() => {
     if(resume && jobDesc) {
       generateInitialMessage(false, resume, jobDesc, model);
+      setFullMessage("");
     }
   }, [resume, jobDesc])
 
