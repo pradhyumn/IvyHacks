@@ -5,7 +5,7 @@ const { useState, useEffect, useCallback, useRef } = React;
 const { createMachine, assign } = XState;
 const { useMachine } = XStateReact;
 
-const SILENT_DELAY = 400; // in milliseconds
+const SILENT_DELAY = 5000; // in milliseconds
 const CANCEL_OLD_AUDIO = false; // TODO: set this to true after cancellations don't terminate containers.
 const INITIAL_MESSAGE =
   "Hi! I'm a language model running on Modal. Talk to me using your microphone, and remember to turn your speaker volume up!";
@@ -65,18 +65,18 @@ const chatMachine = createMachine(
           SEGMENT_RECVD: { actions: "segmentReceive" },
           TRANSCRIPT_RECVD: { actions: "transcriptReceive" },
         },
-        // after: [
-        //   {
-        //     delay: SILENT_DELAY,
-        //     target: "botGenerating",
-        //     actions: "incrementMessages",
-        //     cond: "canGenerate",
-        //   },
-        //   {
-        //     delay: SILENT_DELAY,
-        //     target: "userSilent",
-        //   },
-        // ],
+        after: [
+          {
+            delay: SILENT_DELAY,
+            target: "botGenerating",
+            actions: "incrementMessages",
+            cond: "canGenerate",
+          },
+          {
+            delay: SILENT_DELAY,
+            target: "userSilent",
+          },
+        ],
       },
     },
   },
@@ -504,10 +504,10 @@ async function fetchTranscript(buffer) {
   return await response.json();
 }
 
-async function* fetchGeneration(noop, input, history, isTortoiseOn, resume, jd) {
+async function* fetchGeneration(noop, input, history, isTortoiseOn, resume, jd,model) {
   const body = noop
     ? { noop: true, tts: isTortoiseOn }
-    : { input, history, tts: isTortoiseOn, resume, jd };
+    : { input, history, tts: isTortoiseOn, resume, jd,model };
 
   const response = await fetch("/generate", {
     method: "POST",
@@ -593,7 +593,8 @@ function App() {
         history.slice(1),
         isTortoiseOn,
         resume,
-        jd
+        jd,
+        model
       )) {
         if (type === "text") {
           setFullMessage((m) => m + payload);
@@ -630,7 +631,7 @@ function App() {
     const transition = state.context.messages > history.length + 1;
 
     if (transition && state.matches("botGenerating")) {
-      generateResponse(/* noop = */ false, fullMessage, resume, jobDesc);
+      generateResponse(/* noop = */ false, fullMessage, resume, jobDesc,model);
     }
 
     if (transition) {

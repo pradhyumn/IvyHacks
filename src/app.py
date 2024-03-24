@@ -81,6 +81,9 @@ def web():
         return JSONResponse(content={"text": extracted_text}, status_code=200)
     
     @web_app.post("/generate_questions")
+    async def generate_questions(request: Request):
+        body=await request.json()
+        
 
 
     # @web_app.post("/generate")
