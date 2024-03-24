@@ -112,7 +112,7 @@ def web():
 
             for segment in kickoff(candidate_profile=body["resume"],job_description=body["jd"],client=client):
                 yield {"type": "text", "value": segment.text}
-                sentence += segment
+                sentence += segment.text
 
                 for p in PUNCTUATION:
                     if p in sentence:
@@ -126,7 +126,6 @@ def web():
         def gen_serialized():
         
             for i in gen():
-                print(i)
                 yield json.dumps(i) + "\x1e"
 
         return StreamingResponse(
@@ -167,8 +166,8 @@ def web():
                                                 candidate_response=body["input"],interview_history=body["history"],
                                                 time_left="10 minutes",candidate_profile=body["resume"],
                                                 job_description=body["jd"],client=client):
-                yield {"type": "text", "value": segment}
-                sentence += segment
+                yield {"type": "text", "value": segment.text}
+                sentence += segment.text
 
                 for p in PUNCTUATION:
                     if p in sentence:
