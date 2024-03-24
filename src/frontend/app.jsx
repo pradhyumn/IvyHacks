@@ -699,10 +699,60 @@ const VideoRecorder = () => {
 	);
 };
 
+async function* fetchInitialMessage(
+  noop,
+  isTortoiseOn,
+  resume,
+  jd,
+  model
+) {
+  const body = noop
+    ? { noop: true, tts: isTortoiseOn }
+    : { tts: isTortoiseOn, resume, jd, model };
+
+  const response = await fetch("/kick_off", {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response.ok) {
+    console.error("Error occurred during submission: " + response.status);
+  }
+
+  if (noop) {
+    return;
+  }
+
+  const readableStream = response.body;
+  const decoder = new TextDecoder();
+
+  const reader = readableStream.getReader();
+
+  while (true) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    for (let message of decoder.decode(value).split("\x1e")) {
+      if (message.length === 0) {
+        continue;
+      }
+
+      const { type, value: payload } = JSON.parse(message);
+
+      yield { type, payload };
+    }
+  }
+
+  reader.releaseLock();
+}
 
 function App() {
   const [history, setHistory] = useState([]);
-  const [fullMessage, setFullMessage] = useState("INITIAL_MESSAGE");
+  const [fullMessage, setFullMessage] = useState('');
   const [typedMessage, setTypedMessage] = useState("");
   const [model, setModel] = useState(MODELS[0].id);
   const [botIndicators, setBotIndicators] = useState({});
@@ -730,7 +780,7 @@ function App() {
   }, [service]);
 
   const generateResponse = useCallback(
-    async (noop, input = "", resume, jd) => {
+    async (noop, input = "", resume, jd, model) => {
       if (!noop) {
         recorderNodeRef.current.stop();
       }
@@ -778,10 +828,75 @@ function App() {
     [history, isTortoiseOn]
   );
 
+
+
+
+  const generateInitialMessage = useCallback(
+      async (noop, resume, jd, model) => {
+        // if (!noop) {
+        //   recorderNodeRef.current.stop();
+        // }
+  
+        let firstAudioRecvd = false;
+        for await (let { type, payload } of fetchInitialMessage(
+          noop,
+          isTortoiseOn,
+          resume,
+          jd,
+          model
+        )) {
+          if (type === "text") {
+            setFullMessage((m) => m + payload);
+          } else if (type === "audio") {
+            if (!firstAudioRecvd && CANCEL_OLD_AUDIO) {
+              playQueueRef.current.clear();
+              firstAudioRecvd = true;
+            }
+            playQueueRef.current.add([payload, history.length + 1, true]);
+          } else if (type === "sentence") {
+            playQueueRef.current.add([payload, history.length + 1, false]);
+          }
+        }
+  
+        if (!isTortoiseOn && playQueueRef.current) {
+          while (
+            playQueueRef.current.call_ids.length ||
+            playQueueRef.current._isProcessing
+          ) {
+            await new Promise((r) => setTimeout(r, 100));
+          }
+        }
+        console.log("Finished generating response");
+  
+        if (!noop) {
+          recorderNodeRef.current.start();
+          send("GENERATION_DONE");
+        }
+      },
+      [history, isTortoiseOn]
+    );
+
+  useEffect(() => {
+    if(resume && jobDesc) {
+      generateInitialMessage(false, resume, jobDesc, model);
+      // setHistory((h) => [...h, fullMessage]);
+      // setFullMessage("");
+      // setTypedMessage("");
+
+      const transition = state.context.messages > history.length + 1;
+
+      if (transition) {
+        setHistory((h) => [...h, fullMessage]);
+        setFullMessage("");
+        setTypedMessage("");
+      }
+    }
+  }, [resume, jobDesc])
+
   useEffect(() => {
     const transition = state.context.messages > history.length + 1;
 
-    if (transition && state.matches("botGenerating")) {
+    if (transition && state.matches("botGenerating") && jobDesc && resume) {
       generateResponse(/* noop = */ false, fullMessage, resume, jobDesc, model);
     }
 
