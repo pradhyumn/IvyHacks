@@ -775,23 +775,28 @@ function App() {
           setResume={setResume}
           setJobDesc={setJobDesc}
         />
-        <main className="bg-zinc-800 w-full flex flex-col items-center gap-3 pt-6 overflow-auto">
-          {history.map((msg, i) => (
+        <div className="w-full flex">
+          <main className="w-2/3 bg-zinc-800 flex flex-col items-center gap-3 pt-6 overflow-auto">
+            {history.map((msg, i) => (
+              <ChatMessage
+                key={i}
+                text={msg}
+                isUser={i % 2 == 1}
+                indicator={i % 2 == 0 && botIndicators[i]}
+              />
+            ))}
             <ChatMessage
-              key={i}
-              text={msg}
-              isUser={i % 2 == 1}
-              indicator={i % 2 == 0 && botIndicators[i]}
+              text={typedMessage}
+              isUser={isUserLast}
+              indicator={
+                isUserLast ? userIndicator : botIndicators[history.length]
+              }
             />
-          ))}
-          <ChatMessage
-            text={typedMessage}
-            isUser={isUserLast}
-            indicator={
-              isUserLast ? userIndicator : botIndicators[history.length]
-            }
-          />
-        </main>
+          </main>
+          <div className="w-1/3 bg-zinc-800">
+            <h1 className="text-white">video section</h1>
+          </div>
+        </div>
       </div>
     </div>
   );
