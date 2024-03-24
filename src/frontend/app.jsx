@@ -747,9 +747,17 @@ function App() {
   useEffect(() => {
     if(resume && jobDesc) {
       generateInitialMessage(false, resume, jobDesc, model);
-      setHistory((h) => [...h, fullMessage]);
-      setFullMessage("");
-      setTypedMessage("");
+      // setHistory((h) => [...h, fullMessage]);
+      // setFullMessage("");
+      // setTypedMessage("");
+
+      const transition = state.context.messages > history.length + 1;
+
+      if (transition) {
+        setHistory((h) => [...h, fullMessage]);
+        setFullMessage("");
+        setTypedMessage("");
+      }
     }
   }, [resume, jobDesc])
 
