@@ -702,7 +702,7 @@ const VideoRecorder = () => {
 
 function App() {
   const [history, setHistory] = useState([]);
-  const [fullMessage, setFullMessage] = useState(INITIAL_MESSAGE);
+  const [fullMessage, setFullMessage] = useState("INITIAL_MESSAGE");
   const [typedMessage, setTypedMessage] = useState("");
   const [model, setModel] = useState(MODELS[0].id);
   const [botIndicators, setBotIndicators] = useState({});

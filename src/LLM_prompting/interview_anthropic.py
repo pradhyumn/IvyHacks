@@ -2,76 +2,75 @@
 import dotenv
 import os
 dotenv.load_dotenv()
-import openai
 import dotenv
 import os
 dotenv.load_dotenv()
-from langchain.memory import ConversationBufferMemory
-from langchain.memory import ConversationBufferWindowMemory
+# from langchain.memory import ConversationBufferMemory
+# from langchain.memory import ConversationBufferWindowMemory
 from langchain.prompts import PromptTemplate
 import anthropic
 
-prompt_template = PromptTemplate.from_template(
-    "Tell me a {adjective} joke about {content}."
-)
+# prompt_template = PromptTemplate.from_template(
+#     "Tell me a {adjective} joke about {content}."
+# )
 import asyncio
 
 #FETCH FROM APP
-candidate_profile="""Anushka Yadav is a highly skilled computer science graduate student at the University of Massachusetts Amherst, with a strong background in machine learning, big data, and information retrieval. She holds a B.Tech in Computer Science and Engineering from the Indian Institute of Information Technology, Nagpur, with a CGPA of 8.21/10.
+# candidate_profile="""Anushka Yadav is a highly skilled computer science graduate student at the University of Massachusetts Amherst, with a strong background in machine learning, big data, and information retrieval. She holds a B.Tech in Computer Science and Engineering from the Indian Institute of Information Technology, Nagpur, with a CGPA of 8.21/10.
 
-Work Experience:
-- Machine Learning Associate 2 at PwC AC Bangalore (US Advisory), where she developed a prototype of the Audit Assistant Platform using multi-source document QnA system, semantic vector research, and LLMs. She also integrated a Langchain-based Chatbot and researched weak supervision in NLP using GPT-3.
-- Machine Learning Engineer at Text Mercato Solutions Private Limited, where she handled the product development lifecycle of an Automatic Product description generator, optimized the Quality Check process, and enhanced the accuracy of an AI Data Sourcing Tool.
-- Deep Learning Intern at Text Mercato Solutions Private Limited, working on POCs of AI-based Data Sourcing Tool and Description Generation tool.
-- Research Intern at Visvesvaraya National Institute of Technology, researching Agent-Based Trading in Stock Market using Reinforcement Learning.
+# Work Experience:
+# - Machine Learning Associate 2 at PwC AC Bangalore (US Advisory), where she developed a prototype of the Audit Assistant Platform using multi-source document QnA system, semantic vector research, and LLMs. She also integrated a Langchain-based Chatbot and researched weak supervision in NLP using GPT-3.
+# - Machine Learning Engineer at Text Mercato Solutions Private Limited, where she handled the product development lifecycle of an Automatic Product description generator, optimized the Quality Check process, and enhanced the accuracy of an AI Data Sourcing Tool.
+# - Deep Learning Intern at Text Mercato Solutions Private Limited, working on POCs of AI-based Data Sourcing Tool and Description Generation tool.
+# - Research Intern at Visvesvaraya National Institute of Technology, researching Agent-Based Trading in Stock Market using Reinforcement Learning.
 
-Projects:
-- Virtual Try On: Developed a virtual trial room application for Retail Space using GANs and computer vision.
-- Paraphrase Generation & Identification: Worked on paraphrase generation using T5 transformer and optimized RoBERTa for paraphrase identification using Population-Based Training.
+# Projects:
+# - Virtual Try On: Developed a virtual trial room application for Retail Space using GANs and computer vision.
+# - Paraphrase Generation & Identification: Worked on paraphrase generation using T5 transformer and optimized RoBERTa for paraphrase identification using Population-Based Training.
 
-Publications:
-- Co-authored a paper titled "A Q-learning agent for automated trading in equity stock markets" in Expert Systems with Applications.
+# Publications:
+# - Co-authored a paper titled "A Q-learning agent for automated trading in equity stock markets" in Expert Systems with Applications.
 
-Technical Skills:
-- Programming Languages: Python, C, C++, Java(Core)"""
-job_description="""Lab Summary: As an NLP Intern you will primarily focus on building the NLU platform for Bixby by working with Machine Learning Experts, Lab Leaders and Linguistic Experts, brainstorming novel ideas, researching, building POCs and proposing solutions that cater to the broader business needs. You will work with a small and nimble team to help design machine learning models, data pipelines, integrate into and maintain production systems and analyze key metrics for decision makers to provide insights that will be beneficial to Bixby consumers.
+# Technical Skills:
+# - Programming Languages: Python, C, C++, Java(Core)"""
+# job_description="""Lab Summary: As an NLP Intern you will primarily focus on building the NLU platform for Bixby by working with Machine Learning Experts, Lab Leaders and Linguistic Experts, brainstorming novel ideas, researching, building POCs and proposing solutions that cater to the broader business needs. You will work with a small and nimble team to help design machine learning models, data pipelines, integrate into and maintain production systems and analyze key metrics for decision makers to provide insights that will be beneficial to Bixby consumers.
 
-Position Summary: As an NLP Intern you will primarily focus on building the NLU platform for Bixby by working with Machine Learning Experts, Lab Leaders and Linguistic Experts, brainstorming novel ideas, researching, building POCs and proposing solutions that cater to the broader business needs. You will work with a small and nimble team to help design machine learning models, data pipelines, integrate into and maintain production systems and analyze key metrics for decision makers to provide insights that will be beneficial to Bixby consumers.
+# Position Summary: As an NLP Intern you will primarily focus on building the NLU platform for Bixby by working with Machine Learning Experts, Lab Leaders and Linguistic Experts, brainstorming novel ideas, researching, building POCs and proposing solutions that cater to the broader business needs. You will work with a small and nimble team to help design machine learning models, data pipelines, integrate into and maintain production systems and analyze key metrics for decision makers to provide insights that will be beneficial to Bixby consumers.
 
-Position Responsibilities
+# Position Responsibilities
 
-As an NLP intern, you will research, prototype, develop, deploy and scale innovative ML/NLP solutions in collaboration with Linguistic Experts and Product Management teams
-You will develop predictive models on large-scale datasets to address various business problems leveraging advanced statistical modeling, machine learning, or data mining techniques
-Set up processes to monitor and continually improve efficiency and performance of models
-Software development including algorithm implementation, optimization, performance profiling, integration to production systems, testing and documentation
-Program primarily in Python using efficient algorithms and software design patterns
+# As an NLP intern, you will research, prototype, develop, deploy and scale innovative ML/NLP solutions in collaboration with Linguistic Experts and Product Management teams
+# You will develop predictive models on large-scale datasets to address various business problems leveraging advanced statistical modeling, machine learning, or data mining techniques
+# Set up processes to monitor and continually improve efficiency and performance of models
+# Software development including algorithm implementation, optimization, performance profiling, integration to production systems, testing and documentation
+# Program primarily in Python using efficient algorithms and software design patterns
 
-Required Skills
+# Required Skills
 
-Pursuing a Master’s degree or Ph.D. in relevant field
-Relevant experience in Natural Language Understanding, Intent Classification and Slot Filling, Dialogue Management, Question Answering, Text Classification, Information Retrieval, or Knowledge Extraction
-Experience with building end-to-end systems based on machine learning or deep learning methods
-Strong understanding of computer science fundamentals such as algorithms, data structures and run-time analysis
-Proficiency in Python
-Experience in tuning prompts for Large Language Models
-Experience in training Large Language Models (pretraining, fine-tuning, parameter efficient training)
-Experience in serving and optimizing models latency and memory footprint through techniques like quantization or custom kernel application
-Experience with deep learning architectures such as LSTMs, Transformers, Tree-LSTMs, Graph Neural Networks, etc.
-Experience with cutting-edge deep learning–based NLP models such as ELMo, BERT, OpenAI GPT-2/3, BART, BigBird, ERNIE, etc.
-Experience with deep learning NLP toolkits such as huggingface, spacy, etc.
-Experience with deep learning frameworks like TensorFlow, PyTorch, JAX and libraries like Hugging Face transformers, Deep Graph Library, DGL-KE, etc.
-Able to solve real–world problems using cutting–edge ideas and independent research
-A willingness to learn and remain agile in a dynamic environment
-Analytical and problem-solving skills for design, creation and testing of custom software
-Extensive experience with software prototyping or designing experimental software
-Adept at adapting academic ideas and theoretical algorithms into a production system"""
+# Pursuing a Master’s degree or Ph.D. in relevant field
+# Relevant experience in Natural Language Understanding, Intent Classification and Slot Filling, Dialogue Management, Question Answering, Text Classification, Information Retrieval, or Knowledge Extraction
+# Experience with building end-to-end systems based on machine learning or deep learning methods
+# Strong understanding of computer science fundamentals such as algorithms, data structures and run-time analysis
+# Proficiency in Python
+# Experience in tuning prompts for Large Language Models
+# Experience in training Large Language Models (pretraining, fine-tuning, parameter efficient training)
+# Experience in serving and optimizing models latency and memory footprint through techniques like quantization or custom kernel application
+# Experience with deep learning architectures such as LSTMs, Transformers, Tree-LSTMs, Graph Neural Networks, etc.
+# Experience with cutting-edge deep learning–based NLP models such as ELMo, BERT, OpenAI GPT-2/3, BART, BigBird, ERNIE, etc.
+# Experience with deep learning NLP toolkits such as huggingface, spacy, etc.
+# Experience with deep learning frameworks like TensorFlow, PyTorch, JAX and libraries like Hugging Face transformers, Deep Graph Library, DGL-KE, etc.
+# Able to solve real–world problems using cutting–edge ideas and independent research
+# A willingness to learn and remain agile in a dynamic environment
+# Analytical and problem-solving skills for design, creation and testing of custom software
+# Extensive experience with software prototyping or designing experimental software
+# Adept at adapting academic ideas and theoretical algorithms into a production system"""
 
 
-def get_anthropic_response(prompt):
-    client = anthropic.Anthropic(
-        # defaults to os.environ.get("ANTHROPIC_API_KEY")
-        #api_key="my_api_key",
-    )
+def get_anthropic_response(prompt,client):
+    # client = anthropic.Anthropic(
+    #     # defaults to os.environ.get("ANTHROPIC_API_KEY")
+    #     #api_key="my_api_key",
+    # )
     message = client.messages.create(
         model="claude-3-opus-20240229",
         max_tokens=500,
@@ -157,76 +156,77 @@ Output just expected response and next question from the interviewer.
 ### NEXT QUESTION:
 """)
 
-memory = ConversationBufferWindowMemory(human_prefix = "Question:",ai_prefix = "Candidate Response:",k=2)
+# memory = ConversationBufferWindowMemory(human_prefix = "Question:",ai_prefix = "Candidate Response:",k=2)
 
-def kickoff(candidate_profile,job_description):
+def kickoff(candidate_profile,job_description,client):
     init_question_prompt=initial_prompt.format(candidate_profile=candidate_profile, job_description=job_description)
-    init_question = get_anthropic_response(init_question_prompt)
+    init_question = get_anthropic_response(init_question_prompt,client)
     return init_question
 
-def analyse_and_generate(candidate_emotion_analysis,candidate_response,question,time_left,candidate_profile,job_description):
-
+def analyse_and_generate(candidate_emotion_analysis,candidate_response,interview_history,time_left,candidate_profile,job_description,client):
+    # return interview_history
+    question=interview_history[-2]
     response_feedback_ques=response_feedback.format(question=question,candidate_response=candidate_response,candidate_emotion_analysis=candidate_emotion_analysis)
-    response_feedback_ans = get_anthropic_response(response_feedback_ques)
+    response_feedback_ans = get_anthropic_response(response_feedback_ques,client)
 
     print("-----------")
     print(response_feedback_ans)
     #adding current q and r to memory
-    inputs={"inputs":question}
-    outputs={"outputs":candidate_response}
-    memory.save_context(inputs, outputs)
-    interview_history=memory.load_memory_variables({})['history']
+    # inputs={"inputs":question}
+    # outputs={"outputs":candidate_response}
+    # memory.save_context(inputs, outputs)
+    # interview_history=memory.load_memory_variables({})['history']
 
     print("generating questions")
     QG_prompt_ques=QG_prompt.format(candidate_profile=candidate_profile, job_description=job_description,interview_history=interview_history,response_feedback=response_feedback_ans,time_left=time_left)
-    question_res = get_anthropic_response(QG_prompt_ques)
+    question_res = get_anthropic_response(QG_prompt_ques,client)
     print("-----------")
     
     return question_res
 
 
-init_ques=kickoff(candidate_profile,job_description)
-#send ques to UI and ask for response
+# init_ques=kickoff(candidate_profile,job_description)
+# #send ques to UI and ask for response
 
-print("KICKOFF DONE")
-print(init_ques)
+# print("KICKOFF DONE")
+# print(init_ques)
 
-#GET THESE FROM FRONTEND
-candidate_response="Hi, I am Anushka. I am MSCS student at Umass Amherst.I have 2 years of experience as ML Engineer in India. I have worked at a Automated Product cataloging startup for 2 years and then at PwC as an ML associate for an year. Most of my workex has focused on Text generation, finetunig transformer models, Retrieval Augmented Generation based Pipeline over Audit data and a little weak supervision work. My interests currently include NLP and Information retrieval systems. I am also working at the BIONLP lab at Umass where I am working on LLM Alignment and Self rewarding LLMs in medical domain."
-#question="Tell me about yourself"
-candidate_emotion_analysis="The candidate looks confident and enthusiastic with a smiling face."
-time_left= "38 minutes"
+# #GET THESE FROM FRONTEND
+# candidate_response="Hi, I am Anushka. I am MSCS student at Umass Amherst.I have 2 years of experience as ML Engineer in India. I have worked at a Automated Product cataloging startup for 2 years and then at PwC as an ML associate for an year. Most of my workex has focused on Text generation, finetunig transformer models, Retrieval Augmented Generation based Pipeline over Audit data and a little weak supervision work. My interests currently include NLP and Information retrieval systems. I am also working at the BIONLP lab at Umass where I am working on LLM Alignment and Self rewarding LLMs in medical domain."
+# #question="Tell me about yourself"
+# candidate_emotion_analysis="The candidate looks confident and enthusiastic with a smiling face."
+# time_left= "38 minutes"
 
 
-QUES0= analyse_and_generate(candidate_emotion_analysis,candidate_response,init_ques,time_left,candidate_profile,job_description)
-#send ques to UI 
-print(QUES0)
+# QUES0= analyse_and_generate(candidate_emotion_analysis,candidate_response,init_ques,time_left,candidate_profile,job_description)
+# #send ques to UI 
+# print(QUES0)
 
-print('----')
-candidate_response=" I have mainly worked on training end to end T5 transformer model. I was involved in the complete ML pipeline from data scraping, to processing to model training."
-candidate_emotion_analysis="The candidate looks neutral and attentive."
-time_left= "20 minutes"
+# print('----')
+# candidate_response=" I have mainly worked on training end to end T5 transformer model. I was involved in the complete ML pipeline from data scraping, to processing to model training."
+# candidate_emotion_analysis="The candidate looks neutral and attentive."
+# time_left= "20 minutes"
 
-QUES1= analyse_and_generate(candidate_emotion_analysis,candidate_response,QUES0,time_left,candidate_profile,job_description)
-#send ques to UI 
-print(QUES1)
+# QUES1= analyse_and_generate(candidate_emotion_analysis,candidate_response,QUES0,time_left,candidate_profile,job_description)
+# #send ques to UI 
+# print(QUES1)
 
-print('---')
+# print('---')
 
-candidate_response=" Umm...I think...I don't remember all the details well. I did train it more than 1 year back. My team did improve the metrics when you see Qualitative Analaysis with more diverse result..but..I.. "
-candidate_emotion_analysis="The candidate looks nervous and anxious."
-time_left= "10 minutes"
+# candidate_response=" Umm...I think...I don't remember all the details well. I did train it more than 1 year back. My team did improve the metrics when you see Qualitative Analaysis with more diverse result..but..I.. "
+# candidate_emotion_analysis="The candidate looks nervous and anxious."
+# time_left= "10 minutes"
 
-QUES2= analyse_and_generate(candidate_emotion_analysis,candidate_response,QUES1,time_left,candidate_profile,job_description)
-#send ques to UI 
-print(QUES2)
+# QUES2= analyse_and_generate(candidate_emotion_analysis,candidate_response,QUES1,time_left,candidate_profile,job_description)
+# #send ques to UI 
+# print(QUES2)
 
-print("---")
+# print("---")
 
-candidate_response="Um.. I think..I have not worked on those aspects I think.. Umm "
-candidate_emotion_analysis="The candidate looks nervous and anxious."
-time_left= "10 minutes"
+# candidate_response="Um.. I think..I have not worked on those aspects I think.. Umm "
+# candidate_emotion_analysis="The candidate looks nervous and anxious."
+# time_left= "10 minutes"
 
-QUES3= analyse_and_generate(candidate_emotion_analysis,candidate_response,QUES2,time_left,candidate_profile,job_description)
-#send ques to UI 
-print(QUES3)
+# QUES3= analyse_and_generate(candidate_emotion_analysis,candidate_response,QUES2,time_left,candidate_profile,job_description)
+# #send ques to UI 
+# print(QUES3)
