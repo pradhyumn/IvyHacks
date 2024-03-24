@@ -222,26 +222,32 @@ function Sidebar({
           {label}
         </button>
       ))}
-      <button
-        className="py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 pointer-events-none"
-        onClick={() => onModelSelect(id)}
-        disabled
-      >
-        More coming soon!
-      </button> 
 
+        
       <div id="uploads">
         {isLoading && <div>Loading...</div>}
+
+        <label htmlFor="pdfUpload">Upload Your Resume:</label>
         <input
+          id="pdfUpload"
           type="file"
           accept="application/pdf"
           onChange={handleFileChange}
         />
+
+        <label htmlFor="jobDescription">Job Description:</label>
+        <br></br>
         <textarea
+          id="jobDescription"
           value={jobDesc}
           onChange={handleTextChange}
+          className="w-full border border-gray-300 p-2 rounded-md placeholder:text-gray-500"
+          style={{ minHeight: '150px', color: 'black' }}
         />
-        <button onClick={handleUpload}>Upload</button>
+
+        <button onClick={handleUpload} className={
+            "w-full py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 hover:bg-white/10 hover:text-zinc-200 "
+          }>Upload</button>
         {error && <div>{error}</div>}
       </div>
 
