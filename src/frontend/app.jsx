@@ -764,6 +764,16 @@ function App() {
   const [loading, setLoading] = useState(false);
   const recorderNodeRef = useRef(null);
   const playQueueRef = useRef(null);
+  const resumeRef = useRef(resume);
+  const jobDescRef = useRef(jobDesc);
+
+  useEffect(() => {
+    resumeRef.current = resume;
+  }, [resume]);
+
+  useEffect(() => {
+    jobDescRef.current = jobDesc;
+  }, [jobDesc]);
 
   useEffect(() => {
     const subscription = service.subscribe((state, event) => {
@@ -908,9 +918,12 @@ function App() {
   }, [state, history, fullMessage]);
 
   const onSegmentRecv = useCallback(
-    async (buffer) => {
+    async (buffer, ) => {
       // TODO: these can get reordered
-      if (resume && jobDesc){
+      const currentResume = resumeRef.current;
+      const currentJobDesc = jobDescRef.current;
+  
+      if (currentResume && currentJobDesc) {
         if (buffer.length) {
           send("SEGMENT_RECVD");
         }
