@@ -1,0 +1,134 @@
+{
+  "name": "ADAPTIVE INTERVIEW",
+  "schema_version": "latest",
+  "metadata": {
+    "parameters": {
+      "candidate_profile": "Anushka Yadav is a highly skilled computer science graduate student at the University of Massachusetts Amherst, with a strong background in machine learning, big data, and information retrieval. She holds a B.Tech in Computer Science and Engineering from the Indian Institute of Information Technology, Nagpur, with a CGPA of 8.21/10.\n\nWork Experience:\n- Machine Learning Associate 2 at PwC AC Bangalore (US Advisory), where she developed a prototype of the Audit Assistant Platform using multi-source document QnA system, semantic vector research, and LLMs. She also integrated a Langchain-based Chatbot and researched weak supervision in NLP using GPT-3.\n- Machine Learning Engineer at Text Mercato Solutions Private Limited, where she handled the product development lifecycle of an Automatic Product description generator, optimized the Quality Check process, and enhanced the accuracy of an AI Data Sourcing Tool.\n- Deep Learning Intern at Text Mercato Solutions Private Limited, working on POCs of AI-based Data Sourcing Tool and Description Generation tool.\n- Research Intern at Visvesvaraya National Institute of Technology, researching Agent-Based Trading in Stock Market using Reinforcement Learning.\n\nProjects:\n- Virtual Try On: Developed a virtual trial room application for Retail Space using GANs and computer vision.\n- Paraphrase Generation & Identification: Worked on paraphrase generation using T5 transformer and optimized RoBERTa for paraphrase identification using Population-Based Training.\n\nPublications:\n- Co-authored a paper titled \"A Q-learning agent for automated trading in equity stock markets\" in Expert Systems with Applications.\n\nTechnical Skills:\n- Programming Languages: Python, C, C++, Java(Core)",
+      "job_description": "Lab Summary: As an NLP Intern you will primarily focus on building the NLU platform for Bixby by working with Machine Learning Experts, Lab Leaders and Linguistic Experts, brainstorming novel ideas, researching, building POCs and proposing solutions that cater to the broader business needs. You will work with a small and nimble team to help design machine learning models, data pipelines, integrate into and maintain production systems and analyze key metrics for decision makers to provide insights that will be beneficial to Bixby consumers.\n\nPosition Summary: As an NLP Intern you will primarily focus on building the NLU platform for Bixby by working with Machine Learning Experts, Lab Leaders and Linguistic Experts, brainstorming novel ideas, researching, building POCs and proposing solutions that cater to the broader business needs. You will work with a small and nimble team to help design machine learning models, data pipelines, integrate into and maintain production systems and analyze key metrics for decision makers to provide insights that will be beneficial to Bixby consumers.\n\nPosition Responsibilities\n\nAs an NLP intern, you will research, prototype, develop, deploy and scale innovative ML/NLP solutions in collaboration with Linguistic Experts and Product Management teams\nYou will develop predictive models on large-scale datasets to address various business problems leveraging advanced statistical modeling, machine learning, or data mining techniques\nSet up processes to monitor and continually improve efficiency and performance of models\nSoftware development including algorithm implementation, optimization, performance profiling, integration to production systems, testing and documentation\nProgram primarily in Python using efficient algorithms and software design patterns\n\nRequired Skills\n\nPursuing a Master\u2019s degree or Ph.D. in relevant field\nRelevant experience in Natural Language Understanding, Intent Classification and Slot Filling, Dialogue Management, Question Answering, Text Classification, Information Retrieval, or Knowledge Extraction\nExperience with building end-to-end systems based on machine learning or deep learning methods\nStrong understanding of computer science fundamentals such as algorithms, data structures and run-time analysis\nProficiency in Python\nExperience in tuning prompts for Large Language Models\nExperience in training Large Language Models (pretraining, fine-tuning, parameter efficient training)\nExperience in serving and optimizing models latency and memory footprint through techniques like quantization or custom kernel application\nExperience with deep learning architectures such as LSTMs, Transformers, Tree-LSTMs, Graph Neural Networks, etc.\nExperience with cutting-edge deep learning\u2013based NLP models such as ELMo, BERT, OpenAI GPT-2/3, BART, BigBird, ERNIE, etc.\nExperience with deep learning NLP toolkits such as huggingface, spacy, etc.\nExperience with deep learning frameworks like TensorFlow, PyTorch, JAX and libraries like Hugging Face transformers, Deep Graph Library, DGL-KE, etc.\nAble to solve real\u2013world problems using cutting\u2013edge ideas and independent research\nA willingness to learn and remain agile in a dynamic environment\nAnalytical and problem-solving skills for design, creation and testing of custom software\nExtensive experience with software prototyping or designing experimental software\nAdept at adapting academic ideas and theoretical algorithms into a production system"
+    },
+    "models": {
+      "gemini-pro": {
+        "stream": true
+      }
+    },
+    "default_model": "gemini-pro",
+    "model_parsers": {}
+  },
+  "description": "",
+  "prompts": [
+    {
+      "name": "intial_prompt",
+      "input": "You are a sophisticated AI interviewer agent, equipped to conduct a dynamic and insightful interview by analyzing the candidate's profile summary and the job description they are applying for. Your role is to initiate the interview with a warm welcome, setting a positive tone for the interaction. You are tasked with crafting an opening question that encourages the candidate to introduce themsleves and then present themselves in a manner directly relevant to the job they aspire to secure. This tailored approach ensures that the conversation from the outset is constructive, allowing the candidate to align their experiences, skills, and ambitions with the job's requirements.\n\n### CANDIDATE PROFILE SUMMARY:\n\n{{candidate_profile}}\n\n### JOB DESCRIPTION:\n\n{{job_description}}\n\n### OPENING QUESTION:",
+      "metadata": {
+        "model": "gemini-pro",
+        "parameters": {}
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "\"Anushka, welcome to the interview! We've had the pleasure of reviewing your impressive profile, which showcases your exceptional background in machine learning and NLP. We'd love to learn more about your experiences and aspirations. Could you tell us how your skills and interests align with the NLP Intern role at Bixby?\"",
+          "metadata": {
+            "safetyRatings": [
+              {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "probability": "NEGLIGIBLE"
+              },
+              {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "probability": "NEGLIGIBLE"
+              },
+              {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "probability": "NEGLIGIBLE"
+              },
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "probability": "NEGLIGIBLE"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "response_feedback",
+      "input": "You are a sophisticated response feedback agent, tasked with delivering an in-depth analysis of a candidate's interview performance. Your role is crucial in helping candidates refine their interviewing skills by providing targeted, constructive feedback based on a comprehensive evaluation of their response. Analyze the candidate's performance by considering their emotional state, the content's relevance and accuracy, communication skills, and their ability to apply knowledge practically.\n\n### Comprehensive Evaluation Criteria\n\n1.  **Emotional Insight:** Evaluate the candidate's emotional state during the response, including confidence levels, signs of nervousness, and how these emotions influence their answer.\n    \n2.  **Content Accuracy:** Determine the accuracy and relevance of the response to the question, noting how well the candidate addresses the key points. Mention the correct and incorrect portions of the response.\n    \n3.  **Clarity and Structure:** Assess the organization and coherence of the response, focusing on the logical flow of ideas and the clarity of expression.\n    \n4.  **Sufficiency and Depth:** Judge whether the response fully covers the question's requirements, evaluating the completeness,correct use of terminology and depth of the answer.\n\n### QUESTION: {{question}}\n\n### CANDIDATE RESPONSE TEXT: {{candidate_response}}\n\n### CANDIDATE EMOTION ANALYSIS: {{candidate_emotion_analysis}}\n\n### RESPONSE FEEDBACK:",
+      "metadata": {
+        "model": "gemini-pro",
+        "parameters": {
+          "candidate_emotion_analysis": "The candidate looks confident and enthusiastic with a smiling face.",
+          "candidate_response": "Hi, I am Anushka. I am MSCS student at Umass Amherst.I have 2 years of experience as ML Engineer in India. I have worked at a Automated Product cataloging startup for 2 years and then at PwC as an ML associate for an year. Most of my workex has focused on Text generation, finetunig transformer models, Retrieval Augmented Generation based Pipeline over Audit data and a little weak supervision work. My interests currently include NLP and Information retrieval systems. I am also working at the BIONLP lab at Umass where I am working on LLM Alignment and Self rewarding LLMs in medical domain.",
+          "question": "tell me about yourself."
+        },
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "**Emotional State:**\n- Confident and enthusiastic with a smiling face.\n\n**Content Accuracy & Relevance:**\n- The candidate clearly introduces themselves and provides relevant information about their academic background, work experience, and current interests.\n- The response covers the key points of the question effectively.\n\n**Clarity & Structure:**\n- The response is well-structured and organized, with a clear progression of ideas.\n- The candidate uses concise language and explains their experience and interests in a logical manner.\n\n**Sufficiency & Depth:**\n- The response provides sufficient information to address the question adequately.\n- The candidate includes specific examples of their work experience, such as text generation, fine-tuning transformer models, and working on LLM alignment and self-rewarding LLMs.\n- However, the response lacks specific details about the accomplishments or quantifiable results achieved in their previous roles.\n\n**Specific Feedback:**\n- The candidate could benefit from highlighting any relevant skills or accomplishments that align with the specific job requirements.\n- Providing more context and examples of their work experience would enhance the depth of their response.\n- Consider including details about their research work at BIONLP lab and how it has contributed to their knowledge and skills.\n\n**Overall Analysis:**\nThe candidate's response demonstrates confidence and enthusiasm, with a clear presentation of relevant information. To improve their performance, they could focus on providing specific details and quantifying their accomplishments in future interviews.",
+          "metadata": {
+            "safetyRatings": [
+              {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "probability": "NEGLIGIBLE"
+              },
+              {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "probability": "NEGLIGIBLE"
+              },
+              {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "probability": "NEGLIGIBLE"
+              },
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "probability": "NEGLIGIBLE"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "QG_prompt",
+      "input": "You are an advanced adaptive interview preparation assistant, designed to simulate a realistic interview environment while offering personalized feedback and guidance. Your objective is to craft the next question for the candidate, ensuring it aids in their interview preparation effectively. Utilize the candidate's profile summary, the specific job description they are preparing for, the history of previous questions and responses, and the feedback from the candidate's last response to tailor your next question. Your approach should reflect a deep understanding of the candidate's strengths, areas for improvement, and their emotional state during the practice session.\n\n### RULES:\n\n*   **Follow-Up Policy**: Limit follow-up questions to once per response to clarify unclear or off-target answers. Use follow-up questions as an opportunity to guide the candidate back on track without leading them to the answer directly.\n    \n*   **Time Management**: Be mindful of the interview duration. Adapt the complexity and length of questions to fit the remaining time, ensuring a balance between depth of response and breadth of topics covered.\n    \n*   **Question Diversity**: Avoid redundancy in your questioning. Each question should explore a new aspect of the candidate's qualifications, skills, or experiences relevant to the job description.\n    \n*   **Topic Flexibility**: Monitor the candidate's comfort and competency with the current topic. If the candidate struggles significantly, even after simplifying the questions, tactfully shift the discussion to a new subject area that might elicit more confident responses.\n    \n*   **Emotional Intelligence**: If signs of anxiety or discomfort are detected, gradually transition from challenging to easier questions. Should anxiety persist, momentarily diverge from the interview script to engage the candidate with general inquiries about their experiences or interests mentioned in their profile. This can help to reset the emotional tone of the interview.\n    \n*   **Balance of Content**: Allocate approximately 80% of the interview time to technical or role-specific questions and 20% to behavioral questions. This division should reflect the typical structure of interviews in the candidate's target industry.\n    \n*   **Personalization**: Incorporate elements from the candidate's profile summary and job description to make questions highly relevant and engaging. This strategy encourages candidates to draw directly from their experiences and aspirations, leading to more authentic and informative responses.\n\n*   **Feedback Incorporation**: Use the feedback from the candidate's last response to adjust the difficulty and focus of your next question. This ensures a progressive, customized learning experience that builds on the candidate's performance over time.\n    \n\n### INPUTS REQUIRED:\n\n*   **CANDIDATE PROFILE SUMMARY**: {{candidate_profile}}\n    \n*   **JOB DESCRIPTION**: {{job_description}}\n    \n*   **INTERVIEW HISTORY**: {{interview_history}}\n    \n*   **LAST CANDIDATE RESPONSE FEEDBACK**: {{response_feedback.output}}\n    \n*   **TIME REMAINING**: {{time_left}}\n    \n\n### YOUR TASK:\n\nGiven the information above, generate the next question to ask the candidate. Ensure the question is crafted to stimulate thought, demonstrate the candidate's fit for the role, and address any areas of improvement identified in previous interactions. Your goal is to enhance the candidate's readiness for their actual interview, providing a supportive yet challenging preparation environment.\nOutput just expected response and next question from the interviewer.\n\n### NEXT QUESTION:\n",
+      "metadata": {
+        "model": "gemini-pro",
+        "parameters": {
+          "time_left": "38 minutes"
+        },
+        "remember_chat_context": true
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 0,
+          "data": "**Next Question:**\n\n\"Anushka, in your previous role at PwC, you mentioned working on a prototype of the Audit Assistant Platform using various NLP techniques. Can you describe the specific challenges you faced during the development process and how you overcame them? This will help us understand your problem-solving abilities and how you approach technical complexities in your work.\"",
+          "metadata": {
+            "safetyRatings": [
+              {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "probability": "NEGLIGIBLE"
+              },
+              {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "probability": "NEGLIGIBLE"
+              },
+              {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "probability": "NEGLIGIBLE"
+              },
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "probability": "NEGLIGIBLE"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "$schema": "https://json.schemastore.org/aiconfig-1.0"
+}
