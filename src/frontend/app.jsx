@@ -115,7 +115,69 @@ function Sidebar({
   setIsMicOn,
   setIsTortoiseOn,
   onModelSelect,
+  setResume,
+  setJobDesc,
 }) {
+
+  const [resumeFile, setResumeFile] = useState(null);
+  const [jobDesc, setJobDescText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Handlers for file and text changes
+  const handleFileChange = (event) => {
+    setResumeFile(event.target.files[0]);
+    setError(''); // Reset error message
+  };
+
+  const handleTextChange = (event) => {
+    setJobDescText(event.target.value);
+    setError(''); // Reset error message
+  };
+
+  // Handler for API calls
+  const handleUpload = async () => {
+    if (!resumeFile || !jobDesc) {
+      setError('Please provide both a resume file and a job description.');
+      return;
+    }
+
+    setIsLoading(true); // Start loading
+
+    // Prepare form data for resume
+    const resumeFormData = new FormData();
+    resumeFormData.append('file', resumeFile);
+
+    // Prepare form data for job description
+    const jdFormData = new FormData();
+    jdFormData.append('jd', jobDesc);
+
+    try {
+      // First API call - Upload Resume
+      const resumeResponse = await fetch('/upload_resume', {
+        method: 'POST',
+        body: resumeFormData,
+      });
+      const resumeData = await resumeResponse.json();
+      setResume(resumeData.text);
+
+      // Second API call - Upload Job Description
+      const jdResponse = await fetch('/upload_job_description', {
+        method: 'POST',
+        body: jdFormData,
+      });
+      const jdData = await jdResponse.json();
+      setJobDesc(jdData.text);
+
+      setError(''); // Clear any previous errors
+    } catch (error) {
+      setError('Failed to upload. Please try again.');
+    } finally {
+      setIsLoading(false); // End loading
+    }
+  };
+
+
   return (
     <nav className="bg-zinc-900 w-[400px] flex flex-col h-full gap-2 p-2 text-gray-100 ">
       <h1 className="text-4xl font-semibold text-center text-zinc-200 ml-auto mr-auto flex gap-2 items-center justify-center h-20">
@@ -168,6 +230,22 @@ function Sidebar({
       >
         More coming soon!
       </button> 
+
+      <div id="uploads">
+        {isLoading && <div>Loading...</div>}
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={handleFileChange}
+        />
+        <textarea
+          value={jobDesc}
+          onChange={handleTextChange}
+        />
+        <button onClick={handleUpload}>Upload</button>
+        {error && <div>{error}</div>}
+      </div>
+
       <a
         className="items-center flex justify-center mt-auto"
         href="https://modal.com"
@@ -481,6 +559,9 @@ function App() {
   const [state, send, service] = useMachine(chatMachine);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isTortoiseOn, setIsTortoiseOn] = useState(false);
+  const [jobDesc, setJobDesc] = useState(null);
+  const [resume, setResume] = useState(null);
+  const [loading, setLoading] = useState(false);
   const recorderNodeRef = useRef(null);
   const playQueueRef = useRef(null);
 
@@ -658,6 +739,9 @@ function App() {
     console.log("Bot indicator changed", botIndicators);
   }, [botIndicators]);
 
+  useEffect(() => {
+    console.log({resume, jobDesc})
+  }, [resume, jobDesc])
   return (
     <div className="min-w-full min-h-screen screen">
       <div className="w-full h-screen flex">
@@ -668,6 +752,8 @@ function App() {
           isTortoiseOn={isTortoiseOn}
           setIsMicOn={setIsMicOn}
           setIsTortoiseOn={setIsTortoiseOn}
+          setResume={setResume}
+          setJobDesc={setJobDesc}
         />
         <main className="bg-zinc-800 w-full flex flex-col items-center gap-3 pt-6 overflow-auto">
           {history.map((msg, i) => (
