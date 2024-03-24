@@ -124,7 +124,6 @@ def web():
                 yield speak(sentence)
 
         def gen_serialized():
-        
             for i in gen():
                 yield json.dumps(i) + "\x1e"
 

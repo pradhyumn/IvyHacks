@@ -567,6 +567,138 @@ async function* fetchGeneration(
   reader.releaseLock();
 }
 
+const mimeType = 'video/webm; codecs="opus,vp8"';
+
+const VideoRecorder = () => {
+	const [permission, setPermission] = useState(false);
+  const mediaRecorder = useRef(null);
+  const liveVideoFeed = useRef(null);
+  const [recordingStatus, setRecordingStatus] = useState('inactive');
+  const [stream, setStream] = useState(null);
+  const [recordedVideo, setRecordedVideo] = useState(null);
+  const [videoChunks, setVideoChunks] = useState([]);
+
+  useEffect(() => {
+    getCameraPermission();
+  }, []);
+
+  const getCameraPermission = async () => {
+    // Reset previously recorded video
+    setRecordedVideo(null);
+
+    if ('MediaRecorder' in window) {
+      try {
+        const videoConstraints = { audio: false, video: true };
+        const audioConstraints = { audio: true };
+
+        // Create audio and video streams separately
+        const audioStream = await navigator.mediaDevices.getUserMedia(audioConstraints);
+        const videoStream = await navigator.mediaDevices.getUserMedia(videoConstraints);
+
+        // Permission granted
+        setPermission(true);
+
+        // Combine both audio and video streams
+        const combinedStream = new MediaStream([
+          ...videoStream.getVideoTracks(),
+          ...audioStream.getAudioTracks(),
+        ]);
+
+        // Update state with the combined stream
+        setStream(combinedStream);
+
+        // Set video stream to live feed player
+        liveVideoFeed.current.srcObject = videoStream;
+      } catch (err) {
+        console.error(err);
+        alert('Camera access denied');
+      }
+    } else {
+      alert('The MediaRecorder API is not supported in your browser.');
+    }
+  };
+
+
+	const startRecording = async () => {
+		setRecordingStatus("recording");
+
+		const media = new MediaRecorder(stream, { mimeType });
+
+		mediaRecorder.current = media;
+
+		mediaRecorder.current.start();
+
+		let localVideoChunks = [];
+
+		mediaRecorder.current.ondataavailable = (event) => {
+			if (typeof event.data === "undefined") return;
+			if (event.data.size === 0) return;
+			localVideoChunks.push(event.data);
+		};
+
+		setVideoChunks(localVideoChunks);
+	};
+
+	const stopRecording = () => {
+		//setPermission(false);
+		setRecordingStatus("inactive");
+		mediaRecorder.current.stop();
+
+		mediaRecorder.current.onstop = () => {
+			const videoBlob = new Blob(videoChunks, { type: mimeType });
+			const videoUrl = URL.createObjectURL(videoBlob);
+
+			setRecordedVideo(videoUrl);
+
+			setVideoChunks([]);
+		};
+	};
+
+	return (
+		<div className="mt-4 mr-1">
+			<div className="video-player">
+				{!recordedVideo ? (
+					<video ref={liveVideoFeed} autoPlay className="live-player"></video>
+				) : null}
+				{recordedVideo ? (
+					<div className="recorded-player">
+						<video className="recorded" src={recordedVideo} controls></video>
+            <button className={
+              "mt-4 w-full py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 hover:bg-white/10 text-zinc-200 "
+            }>
+						<a download href={recordedVideo} >
+							Download Recording
+						</a>
+            </button>
+					</div>
+				) : null}
+			</div>
+      <main>
+				<div className="video-controls mt-4">
+					{!permission ? (
+						<button onClick={getCameraPermission} type="button"
+            className={
+              "w-full py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 hover:bg-white/10 hover:text-zinc-200 "
+            }>
+							Get Camera
+						</button>
+					) : null}
+					{permission && recordingStatus === "inactive" ? (
+						<button onClick={startRecording} type="button" className="bg-opacity-10 bg-primary ring-1 ring-primary text-zinc-200 w-full py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 hover:bg-white/10 hover:text-zinc-200">
+							Start Recording
+						</button>
+					) : null}
+					{recordingStatus === "recording" ? (
+						<button onClick={stopRecording} type="button" className="bg-opacity-10 bg-primary ring-1 ring-primary text-zinc-200 w-full py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 hover:bg-white/10 hover:text-zinc-200">
+							Stop Recording
+						</button>
+					) : null}
+				</div>
+			</main>
+		</div>
+	);
+};
+
 async function* fetchInitialMessage(
   noop,
   isTortoiseOn,
@@ -788,6 +920,30 @@ function App() {
     },
     [history]
   );
+  // function VideoRecording({}) {
+  //   return (
+  //     <div className="w-1/3 bg-zinc-800">
+  //       <h1 className="text-white">video section</h1>
+  //       <div className="bg-white rounded-lg shadow-md p-5 text-center">
+  //         <h1>Video Recorder</h1>
+  //         <video id="videoPreview" className="w-full max-w-xs rounded-lg mb-5" autoPlay></video>
+  //         <div className="flex justify-center gap-2.5">
+  //           <button id="startRecording">
+  //             🔴 Start Recording
+  //           </button>
+  //           <button id="stopRecording" disabled>
+  //             ⏹️ Stop Recording
+  //           </button>
+  //         </div>
+  //         {/* <a id="downloadLink" class="download-link" style="display: none">
+  //           ⬇️ Download Video
+  //         </a> */}
+  //         <h2>Transcript</h2>
+  //         <p id="transcript"></p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   async function onMount() {
     // Warm up GPU functions.
@@ -891,23 +1047,28 @@ function App() {
           setResume={setResume}
           setJobDesc={setJobDesc}
         />
-        <main className="bg-zinc-800 w-full flex flex-col items-center gap-3 pt-6 overflow-auto">
-          {history.map((msg, i) => (
+        <div className="w-full flex">
+          <main className="w-2/3 bg-zinc-800 flex flex-col items-center gap-3 pt-6 overflow-auto">
+            {history.map((msg, i) => (
+              <ChatMessage
+                key={i}
+                text={msg}
+                isUser={i % 2 == 1}
+                indicator={i % 2 == 0 && botIndicators[i]}
+              />
+            ))}
             <ChatMessage
-              key={i}
-              text={msg}
-              isUser={i % 2 == 1}
-              indicator={i % 2 == 0 && botIndicators[i]}
+              text={typedMessage}
+              isUser={isUserLast}
+              indicator={
+                isUserLast ? userIndicator : botIndicators[history.length]
+              }
             />
-          ))}
-          <ChatMessage
-            text={typedMessage}
-            isUser={isUserLast}
-            indicator={
-              isUserLast ? userIndicator : botIndicators[history.length]
-            }
-          />
-        </main>
+          </main>
+          <div className="w-1/3 bg-zinc-800">
+            <VideoRecorder />
+          </div>
+        </div>
       </div>
     </div>
   );
