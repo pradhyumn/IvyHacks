@@ -909,14 +909,17 @@ function App() {
 
   const onSegmentRecv = useCallback(
     async (buffer) => {
-      if (buffer.length) {
-        send("SEGMENT_RECVD");
-      }
       // TODO: these can get reordered
-      const data = await fetchTranscript(buffer);
-      if (buffer.length) {
-        send({ type: "TRANSCRIPT_RECVD", transcript: data });
+      if (resume && jobDesc){
+        if (buffer.length) {
+          send("SEGMENT_RECVD");
+        }
+        const data = await fetchTranscript(buffer);
+        if (buffer.length) {
+          send({ type: "TRANSCRIPT_RECVD", transcript: data });
+        }
       }
+      
     },
     [history]
   );
