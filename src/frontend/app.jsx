@@ -753,7 +753,7 @@ function App() {
   useEffect(() => {
     const transition = state.context.messages > history.length + 1;
 
-    if (transition && state.matches("botGenerating")) {
+    if (transition && state.matches("botGenerating") && jobDesc && resume) {
       generateResponse(/* noop = */ false, fullMessage, resume, jobDesc, model);
     }
 
