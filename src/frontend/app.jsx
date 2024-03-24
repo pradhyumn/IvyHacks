@@ -19,7 +19,7 @@ const INDICATOR_TYPE = {
 
 const MODELS = [
   { id: "claude-3-opus", label: "Claude 3 Opus" },
-  { id:"gemini-pro", label: "Gemini Pro"},
+  { id: "gemini-pro", label: "Gemini Pro" },
 ];
 
 const chatMachine = createMachine(
@@ -117,27 +117,26 @@ function Sidebar({
   setResume,
   setJobDesc,
 }) {
-
   const [resumeFile, setResumeFile] = useState(null);
-  const [jobDesc, setJobDescText] = useState('');
+  const [jobDesc, setJobDescText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Handlers for file and text changes
   const handleFileChange = (event) => {
     setResumeFile(event.target.files[0]);
-    setError(''); // Reset error message
+    setError(""); // Reset error message
   };
 
   const handleTextChange = (event) => {
     setJobDescText(event.target.value);
-    setError(''); // Reset error message
+    setError(""); // Reset error message
   };
 
   // Handler for API calls
   const handleUpload = async () => {
     if (!resumeFile || !jobDesc) {
-      setError('Please provide both a resume file and a job description.');
+      setError("Please provide both a resume file and a job description.");
       return;
     }
 
@@ -145,37 +144,36 @@ function Sidebar({
 
     // Prepare form data for resume
     const resumeFormData = new FormData();
-    resumeFormData.append('file', resumeFile);
+    resumeFormData.append("file", resumeFile);
 
     // Prepare form data for job description
     const jdFormData = new FormData();
-    jdFormData.append('jd', jobDesc);
+    jdFormData.append("jd", jobDesc);
 
     try {
       // First API call - Upload Resume
-      const resumeResponse = await fetch('/upload_resume', {
-        method: 'POST',
+      const resumeResponse = await fetch("/upload_resume", {
+        method: "POST",
         body: resumeFormData,
       });
       const resumeData = await resumeResponse.json();
       setResume(resumeData.text);
 
       // Second API call - Upload Job Description
-      const jdResponse = await fetch('/upload_job_description', {
-        method: 'POST',
+      const jdResponse = await fetch("/upload_job_description", {
+        method: "POST",
         body: jdFormData,
       });
       const jdData = await jdResponse.json();
       setJobDesc(jdData.text);
 
-      setError(''); // Clear any previous errors
+      setError(""); // Clear any previous errors
     } catch (error) {
-      setError('Failed to upload. Please try again.');
+      setError("Failed to upload. Please try again.");
     } finally {
       setIsLoading(false); // End loading
     }
   };
-
 
   return (
     <nav className="bg-zinc-900 w-[400px] flex flex-col h-full gap-2 p-2 text-gray-100 ">
@@ -223,8 +221,7 @@ function Sidebar({
         </button>
       ))}
 
-        
-      <div id="uploads">
+      <div id="uploads" className="mt-4">
         {isLoading && <div>Loading...</div>}
 
         <label htmlFor="pdfUpload">Upload Your Resume:</label>
@@ -235,19 +232,26 @@ function Sidebar({
           onChange={handleFileChange}
         />
 
-        <label htmlFor="jobDescription">Job Description:</label>
-        <br></br>
-        <textarea
-          id="jobDescription"
-          value={jobDesc}
-          onChange={handleTextChange}
-          className="w-full border border-gray-300 p-2 rounded-md placeholder:text-gray-500"
-          style={{ minHeight: '150px', color: 'black' }}
-        />
+        <div className="mt-4">
+          <label htmlFor="jobDescription">Job Description:</label>
+          <br></br>
+          <textarea
+            id="jobDescription"
+            value={jobDesc}
+            onChange={handleTextChange}
+            className="w-full border border-gray-300 p-2 rounded-md placeholder:text-gray-500"
+            style={{ minHeight: "300px", color: "black" }}
+          />
+        </div>
 
-        <button onClick={handleUpload} className={
+        <button
+          onClick={handleUpload}
+          className={
             "w-full py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 hover:bg-white/10 hover:text-zinc-200 "
-          }>Upload</button>
+          }
+        >
+          Upload
+        </button>
         {error && <div>{error}</div>}
       </div>
 
@@ -510,10 +514,18 @@ async function fetchTranscript(buffer) {
   return await response.json();
 }
 
-async function* fetchGeneration(noop, input, history, isTortoiseOn, resume, jd,model) {
+async function* fetchGeneration(
+  noop,
+  input,
+  history,
+  isTortoiseOn,
+  resume,
+  jd,
+  model
+) {
   const body = noop
     ? { noop: true, tts: isTortoiseOn }
-    : { input, history, tts: isTortoiseOn, resume, jd,model };
+    : { input, history, tts: isTortoiseOn, resume, jd, model };
 
   const response = await fetch("/generate", {
     method: "POST",
@@ -637,7 +649,7 @@ function App() {
     const transition = state.context.messages > history.length + 1;
 
     if (transition && state.matches("botGenerating")) {
-      generateResponse(/* noop = */ false, fullMessage, resume, jobDesc,model);
+      generateResponse(/* noop = */ false, fullMessage, resume, jobDesc, model);
     }
 
     if (transition) {
@@ -748,8 +760,8 @@ function App() {
   }, [botIndicators]);
 
   useEffect(() => {
-    console.log({resume, jobDesc})
-  }, [resume, jobDesc])
+    console.log({ resume, jobDesc });
+  }, [resume, jobDesc]);
   return (
     <div className="min-w-full min-h-screen screen">
       <div className="w-full h-screen flex">
