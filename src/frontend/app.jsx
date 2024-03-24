@@ -505,10 +505,10 @@ async function fetchTranscript(buffer) {
   return await response.json();
 }
 
-async function* fetchGeneration(noop, input, history, isTortoiseOn) {
+async function* fetchGeneration(noop, input, history, isTortoiseOn, resume, jd) {
   const body = noop
     ? { noop: true, tts: isTortoiseOn }
-    : { input, history, tts: isTortoiseOn };
+    : { input, history, tts: isTortoiseOn, resume, jd };
 
   const response = await fetch("/generate", {
     method: "POST",
@@ -580,7 +580,7 @@ function App() {
   }, [service]);
 
   const generateResponse = useCallback(
-    async (noop, input = "") => {
+    async (noop, input = "", resume, jd) => {
       if (!noop) {
         recorderNodeRef.current.stop();
       }
@@ -592,7 +592,9 @@ function App() {
         noop,
         input,
         history.slice(1),
-        isTortoiseOn
+        isTortoiseOn,
+        resume,
+        jd
       )) {
         if (type === "text") {
           setFullMessage((m) => m + payload);
@@ -629,7 +631,7 @@ function App() {
     const transition = state.context.messages > history.length + 1;
 
     if (transition && state.matches("botGenerating")) {
-      generateResponse(/* noop = */ false, fullMessage);
+      generateResponse(/* noop = */ false, fullMessage, resume, jobDesc);
     }
 
     if (transition) {
