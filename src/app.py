@@ -110,9 +110,9 @@ def web():
         def gen():
             sentence = ""
 
-            for segment in kick_off(candidate_profile=body["resume"],job_description=body["jd"],client=client):
-                yield {"type": "text", "value": segment}
-                sentence += segment
+            for segment in kickoff(candidate_profile=body["resume"],job_description=body["jd"],client=client):
+                yield {"type": "text", "value": segment.text}
+                sentence += segment.text
 
                 for p in PUNCTUATION:
                     if p in sentence:
@@ -165,8 +165,8 @@ def web():
                                                 candidate_response=body["input"],interview_history=body["history"],
                                                 time_left="10 minutes",candidate_profile=body["resume"],
                                                 job_description=body["jd"],client=client):
-                yield {"type": "text", "value": segment}
-                sentence += segment
+                yield {"type": "text", "value": segment.text}
+                sentence += segment.text
 
                 for p in PUNCTUATION:
                     if p in sentence:

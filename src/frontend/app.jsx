@@ -757,7 +757,7 @@ function App() {
   const [model, setModel] = useState(MODELS[0].id);
   const [botIndicators, setBotIndicators] = useState({});
   const [state, send, service] = useMachine(chatMachine);
-  const [isMicOn, setIsMicOn] = useState(true);
+  const [isMicOn, setIsMicOn] = useState(false);
   const [isTortoiseOn, setIsTortoiseOn] = useState(false);
   const [jobDesc, setJobDesc] = useState(null);
   const [resume, setResume] = useState(null);
