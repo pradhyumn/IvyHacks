@@ -5,4 +5,4 @@ image=(modal.Image.debian_slim(python_version="3.10.8")
                                          "anthropic",
                                          "python-dotenv",
                                          "langchain",))
-stub = Stub(name="web19", image=image)
+stub = Stub(name="web81", image=image)

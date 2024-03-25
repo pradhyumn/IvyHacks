@@ -165,12 +165,13 @@ def kickoff(candidate_profile,job_description,client):
 
 def analyse_and_generate(candidate_emotion_analysis,candidate_response,interview_history,time_left,candidate_profile,job_description,client):
     # return interview_history
-    question=interview_history[-2]
+    print(interview_history)
+    question=interview_history.append(candidate_response)
     response_feedback_ques=response_feedback.format(question=question,candidate_response=candidate_response,candidate_emotion_analysis=candidate_emotion_analysis)
     response_feedback_ans = get_anthropic_response(response_feedback_ques,client)
 
     print("-----------")
-    print(response_feedback_ans)
+    print(question)
     #adding current q and r to memory
     # inputs={"inputs":question}
     # outputs={"outputs":candidate_response}

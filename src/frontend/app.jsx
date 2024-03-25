@@ -24,13 +24,19 @@ const MODELS = [
 
 const chatMachine = createMachine(
   {
-    initial: "botDone",
+    initial: "first_msg",
     context: {
       pendingSegments: 0,
       transcript: "",
-      messages: 0,
+      messages: 1,
     },
     states: {
+      first_msg: {
+        on: {
+          GENERATION_DONE_INITIAL: { target: "botDone", actions: "resetTranscript" },
+        },
+      },
+  
       botGenerating: {
         on: {
           GENERATION_DONE: { target: "botDone", actions: "resetTranscript" },
@@ -801,7 +807,7 @@ function App() {
       for await (let { type, payload } of fetchGeneration(
         noop,
         input,
-        history.slice(1),
+        history,
         isTortoiseOn,
         resume,
         jd,
@@ -843,9 +849,9 @@ function App() {
 
   const generateInitialMessage = useCallback(
       async (noop, resume, jd, model) => {
-        // if (!noop) {
-        //   recorderNodeRef.current.stop();
-        // }
+        if (!noop) {
+          recorderNodeRef.current.stop();
+        }
   
         let firstAudioRecvd = false;
         for await (let { type, payload } of fetchInitialMessage(
@@ -880,7 +886,7 @@ function App() {
   
         if (!noop) {
           recorderNodeRef.current.start();
-          send("GENERATION_DONE");
+          send("GENERATION_DONE_INITIAL");
         }
       },
       [history, isTortoiseOn]
@@ -889,9 +895,6 @@ function App() {
   useEffect(() => {
     if(resume && jobDesc) {
       generateInitialMessage(false, resume, jobDesc, model);
-      // setHistory((h) => [...h, fullMessage]);
-      setFullMessage("");
-      // setTypedMessage("");
 
       const transition = state.context.messages > history.length + 1;
 
