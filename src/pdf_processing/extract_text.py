@@ -20,3 +20,4 @@ class ExtractText:
         messages=[{"role": "user", "content": text}]
         )
         return message
+
