@@ -5,7 +5,7 @@ const { useState, useEffect, useCallback, useRef } = React;
 const { createMachine, assign } = XState;
 const { useMachine } = XStateReact;
 
-const SILENT_DELAY = 400; // in milliseconds
+const SILENT_DELAY = 5000; // in milliseconds
 const CANCEL_OLD_AUDIO = false; // TODO: set this to true after cancellations don't terminate containers.
 const INITIAL_MESSAGE =
   "Hi! I'm a language model running on Modal. Talk to me using your microphone, and remember to turn your speaker volume up!";
@@ -18,20 +18,25 @@ const INDICATOR_TYPE = {
 };
 
 const MODELS = [
-  { id: "zephyr-7b-beta-4bit", label: "Zephyr 7B beta (4-bit)" },
-  // { id: "vicuna-13b-4bit", label: "Vicuna 13B (4-bit)" },
-  // { id: "alpaca-lora-7b", label: "Alpaca LORA 7B" },
+  { id: "claude-3-opus", label: "Claude 3 Opus" },
+  { id: "gemini-pro", label: "Gemini Pro" },
 ];
 
 const chatMachine = createMachine(
   {
-    initial: "botDone",
+    initial: "first_msg",
     context: {
       pendingSegments: 0,
       transcript: "",
       messages: 1,
     },
     states: {
+      first_msg: {
+        on: {
+          GENERATION_DONE_INITIAL: { target: "botDone", actions: "resetTranscript" },
+        },
+      },
+  
       botGenerating: {
         on: {
           GENERATION_DONE: { target: "botDone", actions: "resetTranscript" },
@@ -66,18 +71,18 @@ const chatMachine = createMachine(
           SEGMENT_RECVD: { actions: "segmentReceive" },
           TRANSCRIPT_RECVD: { actions: "transcriptReceive" },
         },
-        // after: [
-        //   {
-        //     delay: SILENT_DELAY,
-        //     target: "botGenerating",
-        //     actions: "incrementMessages",
-        //     cond: "canGenerate",
-        //   },
-        //   {
-        //     delay: SILENT_DELAY,
-        //     target: "userSilent",
-        //   },
-        // ],
+        after: [
+          {
+            delay: SILENT_DELAY,
+            target: "botGenerating",
+            actions: "incrementMessages",
+            cond: "canGenerate",
+          },
+          {
+            delay: SILENT_DELAY,
+            target: "userSilent",
+          },
+        ],
       },
     },
   },
@@ -115,11 +120,71 @@ function Sidebar({
   setIsMicOn,
   setIsTortoiseOn,
   onModelSelect,
+  setResume,
+  setJobDesc,
 }) {
+  const [resumeFile, setResumeFile] = useState(null);
+  const [jobDesc, setJobDescText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Handlers for file and text changes
+  const handleFileChange = (event) => {
+    setResumeFile(event.target.files[0]);
+    setError(""); // Reset error message
+  };
+
+  const handleTextChange = (event) => {
+    setJobDescText(event.target.value);
+    setError(""); // Reset error message
+  };
+
+  // Handler for API calls
+  const handleUpload = async () => {
+    if (!resumeFile || !jobDesc) {
+      setError("Please provide both a resume file and a job description.");
+      return;
+    }
+
+    setIsLoading(true); // Start loading
+
+    // Prepare form data for resume
+    const resumeFormData = new FormData();
+    resumeFormData.append("file", resumeFile);
+
+    // Prepare form data for job description
+    const jdFormData = new FormData();
+    jdFormData.append("jd", jobDesc);
+
+    try {
+      // First API call - Upload Resume
+      const resumeResponse = await fetch("/upload_resume", {
+        method: "POST",
+        body: resumeFormData,
+      });
+      const resumeData = await resumeResponse.json();
+      setResume(resumeData.text);
+
+      // Second API call - Upload Job Description
+      const jdResponse = await fetch("/upload_job_description", {
+        method: "POST",
+        body: jdFormData,
+      });
+      const jdData = await jdResponse.json();
+      setJobDesc(jdData.text);
+
+      setError(""); // Clear any previous errors
+    } catch (error) {
+      setError("Failed to upload. Please try again.");
+    } finally {
+      setIsLoading(false); // End loading
+    }
+  };
+
   return (
     <nav className="bg-zinc-900 w-[400px] flex flex-col h-full gap-2 p-2 text-gray-100 ">
       <h1 className="text-4xl font-semibold text-center text-zinc-200 ml-auto mr-auto flex gap-2 items-center justify-center h-20">
-        QuiLLMan
+        Interview
         <span className="bg-yellow-300 text-yellow-900 py-0.5 px-1.5 text-xs rounded-md uppercase">
           Plus
         </span>
@@ -161,13 +226,41 @@ function Sidebar({
           {label}
         </button>
       ))}
-      <button
-        className="py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 pointer-events-none"
-        onClick={() => onModelSelect(id)}
-        disabled
-      >
-        More coming soon!
-      </button>
+
+      <div id="uploads" className="mt-4">
+        {isLoading && <div>Loading...</div>}
+
+        <label htmlFor="pdfUpload">Upload Your Resume:</label>
+        <input
+          id="pdfUpload"
+          type="file"
+          accept="application/pdf"
+          onChange={handleFileChange}
+        />
+
+        <div className="mt-4">
+          <label htmlFor="jobDescription">Job Description:</label>
+          <br></br>
+          <textarea
+            id="jobDescription"
+            value={jobDesc}
+            onChange={handleTextChange}
+            className="w-full border border-gray-300 p-2 rounded-md placeholder:text-gray-500"
+            style={{ minHeight: "300px", color: "black" }}
+          />
+        </div>
+
+        <button
+          onClick={handleUpload}
+          className={
+            "w-full py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 hover:bg-white/10 hover:text-zinc-200 "
+          }
+        >
+          Upload
+        </button>
+        {error && <div>{error}</div>}
+      </div>
+
       <a
         className="items-center flex justify-center mt-auto"
         href="https://modal.com"
@@ -427,10 +520,18 @@ async function fetchTranscript(buffer) {
   return await response.json();
 }
 
-async function* fetchGeneration(noop, input, history, isTortoiseOn) {
+async function* fetchGeneration(
+  noop,
+  input,
+  history,
+  isTortoiseOn,
+  resume,
+  jd,
+  model
+) {
   const body = noop
     ? { noop: true, tts: isTortoiseOn }
-    : { input, history, tts: isTortoiseOn };
+    : { input, history, tts: isTortoiseOn, resume, jd, model };
 
   const response = await fetch("/generate", {
     method: "POST",
@@ -472,17 +573,213 @@ async function* fetchGeneration(noop, input, history, isTortoiseOn) {
   reader.releaseLock();
 }
 
+const mimeType = 'video/webm; codecs="opus,vp8"';
+
+const VideoRecorder = () => {
+	const [permission, setPermission] = useState(false);
+  const mediaRecorder = useRef(null);
+  const liveVideoFeed = useRef(null);
+  const [recordingStatus, setRecordingStatus] = useState('inactive');
+  const [stream, setStream] = useState(null);
+  const [recordedVideo, setRecordedVideo] = useState(null);
+  const [videoChunks, setVideoChunks] = useState([]);
+
+  useEffect(() => {
+    getCameraPermission();
+  }, []);
+
+  const getCameraPermission = async () => {
+    // Reset previously recorded video
+    setRecordedVideo(null);
+
+    if ('MediaRecorder' in window) {
+      try {
+        const videoConstraints = { audio: false, video: true };
+        const audioConstraints = { audio: true };
+
+        // Create audio and video streams separately
+        const audioStream = await navigator.mediaDevices.getUserMedia(audioConstraints);
+        const videoStream = await navigator.mediaDevices.getUserMedia(videoConstraints);
+
+        // Permission granted
+        setPermission(true);
+
+        // Combine both audio and video streams
+        const combinedStream = new MediaStream([
+          ...videoStream.getVideoTracks(),
+          ...audioStream.getAudioTracks(),
+        ]);
+
+        // Update state with the combined stream
+        setStream(combinedStream);
+
+        // Set video stream to live feed player
+        liveVideoFeed.current.srcObject = videoStream;
+      } catch (err) {
+        console.error(err);
+        alert('Camera access denied');
+      }
+    } else {
+      alert('The MediaRecorder API is not supported in your browser.');
+    }
+  };
+
+
+	const startRecording = async () => {
+		setRecordingStatus("recording");
+
+		const media = new MediaRecorder(stream, { mimeType });
+
+		mediaRecorder.current = media;
+
+		mediaRecorder.current.start();
+
+		let localVideoChunks = [];
+
+		mediaRecorder.current.ondataavailable = (event) => {
+			if (typeof event.data === "undefined") return;
+			if (event.data.size === 0) return;
+			localVideoChunks.push(event.data);
+		};
+
+		setVideoChunks(localVideoChunks);
+	};
+
+	const stopRecording = () => {
+		//setPermission(false);
+		setRecordingStatus("inactive");
+		mediaRecorder.current.stop();
+
+		mediaRecorder.current.onstop = () => {
+			const videoBlob = new Blob(videoChunks, { type: mimeType });
+			const videoUrl = URL.createObjectURL(videoBlob);
+
+			setRecordedVideo(videoUrl);
+
+			setVideoChunks([]);
+		};
+	};
+
+	return (
+		<div className="mt-4 mr-1">
+			<div className="video-player">
+				{!recordedVideo ? (
+					<video ref={liveVideoFeed} autoPlay className="live-player"></video>
+				) : null}
+				{recordedVideo ? (
+					<div className="recorded-player">
+						<video className="recorded" src={recordedVideo} controls></video>
+            <button className={
+              "mt-4 w-full py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 hover:bg-white/10 text-zinc-200 "
+            }>
+						<a download href={recordedVideo} >
+							Download Recording
+						</a>
+            </button>
+					</div>
+				) : null}
+			</div>
+      <main>
+				<div className="video-controls mt-4">
+					{!permission ? (
+						<button onClick={getCameraPermission} type="button"
+            className={
+              "w-full py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 hover:bg-white/10 hover:text-zinc-200 "
+            }>
+							Get Camera
+						</button>
+					) : null}
+					{permission && recordingStatus === "inactive" ? (
+						<button onClick={startRecording} type="button" className="bg-opacity-10 bg-primary ring-1 ring-primary text-zinc-200 w-full py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 hover:bg-white/10 hover:text-zinc-200">
+							Start Recording
+						</button>
+					) : null}
+					{recordingStatus === "recording" ? (
+						<button onClick={stopRecording} type="button" className="bg-opacity-10 bg-primary ring-1 ring-primary text-zinc-200 w-full py-2 items-center justify-center rounded-md cursor-pointer border border-white/20 hover:bg-white/10 hover:text-zinc-200">
+							Stop Recording
+						</button>
+					) : null}
+				</div>
+			</main>
+		</div>
+	);
+};
+
+async function* fetchInitialMessage(
+  noop,
+  isTortoiseOn,
+  resume,
+  jd,
+  model
+) {
+  const body = noop
+    ? { noop: true, tts: isTortoiseOn }
+    : { tts: isTortoiseOn, resume, jd, model };
+
+  const response = await fetch("/kick_off", {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response.ok) {
+    console.error("Error occurred during submission: " + response.status);
+  }
+
+  if (noop) {
+    return;
+  }
+
+  const readableStream = response.body;
+  const decoder = new TextDecoder();
+
+  const reader = readableStream.getReader();
+
+  while (true) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    for (let message of decoder.decode(value).split("\x1e")) {
+      if (message.length === 0) {
+        continue;
+      }
+
+      const { type, value: payload } = JSON.parse(message);
+
+      yield { type, payload };
+    }
+  }
+
+  reader.releaseLock();
+}
+
 function App() {
   const [history, setHistory] = useState([]);
-  const [fullMessage, setFullMessage] = useState(INITIAL_MESSAGE);
+  const [fullMessage, setFullMessage] = useState('');
   const [typedMessage, setTypedMessage] = useState("");
   const [model, setModel] = useState(MODELS[0].id);
   const [botIndicators, setBotIndicators] = useState({});
   const [state, send, service] = useMachine(chatMachine);
-  const [isMicOn, setIsMicOn] = useState(true);
+  const [isMicOn, setIsMicOn] = useState(false);
   const [isTortoiseOn, setIsTortoiseOn] = useState(false);
+  const [jobDesc, setJobDesc] = useState(null);
+  const [resume, setResume] = useState(null);
+  const [loading, setLoading] = useState(false);
   const recorderNodeRef = useRef(null);
   const playQueueRef = useRef(null);
+  const resumeRef = useRef(resume);
+  const jobDescRef = useRef(jobDesc);
+
+  useEffect(() => {
+    resumeRef.current = resume;
+  }, [resume]);
+
+  useEffect(() => {
+    jobDescRef.current = jobDesc;
+  }, [jobDesc]);
 
   useEffect(() => {
     const subscription = service.subscribe((state, event) => {
@@ -499,7 +796,7 @@ function App() {
   }, [service]);
 
   const generateResponse = useCallback(
-    async (noop, input = "") => {
+    async (noop, input = "", resume, jd, model) => {
       if (!noop) {
         recorderNodeRef.current.stop();
       }
@@ -510,8 +807,11 @@ function App() {
       for await (let { type, payload } of fetchGeneration(
         noop,
         input,
-        history.slice(1),
-        isTortoiseOn
+        history,
+        isTortoiseOn,
+        resume,
+        jd,
+        model
       )) {
         if (type === "text") {
           setFullMessage((m) => m + payload);
@@ -544,11 +844,73 @@ function App() {
     [history, isTortoiseOn]
   );
 
+
+
+
+  const generateInitialMessage = useCallback(
+      async (noop, resume, jd, model) => {
+        if (!noop) {
+          recorderNodeRef.current.stop();
+        }
+  
+        let firstAudioRecvd = false;
+        for await (let { type, payload } of fetchInitialMessage(
+          noop,
+          isTortoiseOn,
+          resume,
+          jd,
+          model
+        )) {
+          if (type === "text") {
+            setFullMessage((m) => m + payload);
+          } else if (type === "audio") {
+            if (!firstAudioRecvd && CANCEL_OLD_AUDIO) {
+              playQueueRef.current.clear();
+              firstAudioRecvd = true;
+            }
+            playQueueRef.current.add([payload, history.length + 1, true]);
+          } else if (type === "sentence") {
+            playQueueRef.current.add([payload, history.length + 1, false]);
+          }
+        }
+  
+        if (!isTortoiseOn && playQueueRef.current) {
+          while (
+            playQueueRef.current.call_ids.length ||
+            playQueueRef.current._isProcessing
+          ) {
+            await new Promise((r) => setTimeout(r, 100));
+          }
+        }
+        console.log("Finished generating response");
+  
+        if (!noop) {
+          recorderNodeRef.current.start();
+          send("GENERATION_DONE_INITIAL");
+        }
+      },
+      [history, isTortoiseOn]
+    );
+
+  useEffect(() => {
+    if(resume && jobDesc) {
+      generateInitialMessage(false, resume, jobDesc, model);
+
+      const transition = state.context.messages > history.length + 1;
+
+      if (transition) {
+        setHistory((h) => [...h, fullMessage]);
+        setFullMessage("");
+        setTypedMessage("");
+      }
+    }
+  }, [resume, jobDesc])
+
   useEffect(() => {
     const transition = state.context.messages > history.length + 1;
 
-    if (transition && state.matches("botGenerating")) {
-      generateResponse(/* noop = */ false, fullMessage);
+    if (transition && state.matches("botGenerating") && jobDesc && resume) {
+      generateResponse(/* noop = */ false, fullMessage, resume, jobDesc, model);
     }
 
     if (transition) {
@@ -559,18 +921,48 @@ function App() {
   }, [state, history, fullMessage]);
 
   const onSegmentRecv = useCallback(
-    async (buffer) => {
-      if (buffer.length) {
-        send("SEGMENT_RECVD");
-      }
+    async (buffer, ) => {
       // TODO: these can get reordered
-      const data = await fetchTranscript(buffer);
-      if (buffer.length) {
-        send({ type: "TRANSCRIPT_RECVD", transcript: data });
+      const currentResume = resumeRef.current;
+      const currentJobDesc = jobDescRef.current;
+  
+      if (currentResume && currentJobDesc) {
+        if (buffer.length) {
+          send("SEGMENT_RECVD");
+        }
+        const data = await fetchTranscript(buffer);
+        if (buffer.length) {
+          send({ type: "TRANSCRIPT_RECVD", transcript: data });
+        }
       }
+      
     },
     [history]
   );
+  // function VideoRecording({}) {
+  //   return (
+  //     <div className="w-1/3 bg-zinc-800">
+  //       <h1 className="text-white">video section</h1>
+  //       <div className="bg-white rounded-lg shadow-md p-5 text-center">
+  //         <h1>Video Recorder</h1>
+  //         <video id="videoPreview" className="w-full max-w-xs rounded-lg mb-5" autoPlay></video>
+  //         <div className="flex justify-center gap-2.5">
+  //           <button id="startRecording">
+  //             🔴 Start Recording
+  //           </button>
+  //           <button id="stopRecording" disabled>
+  //             ⏹️ Stop Recording
+  //           </button>
+  //         </div>
+  //         {/* <a id="downloadLink" class="download-link" style="display: none">
+  //           ⬇️ Download Video
+  //         </a> */}
+  //         <h2>Transcript</h2>
+  //         <p id="transcript"></p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   async function onMount() {
     // Warm up GPU functions.
@@ -658,6 +1050,9 @@ function App() {
     console.log("Bot indicator changed", botIndicators);
   }, [botIndicators]);
 
+  useEffect(() => {
+    console.log({ resume, jobDesc });
+  }, [resume, jobDesc]);
   return (
     <div className="min-w-full min-h-screen screen">
       <div className="w-full h-screen flex">
@@ -668,24 +1063,31 @@ function App() {
           isTortoiseOn={isTortoiseOn}
           setIsMicOn={setIsMicOn}
           setIsTortoiseOn={setIsTortoiseOn}
+          setResume={setResume}
+          setJobDesc={setJobDesc}
         />
-        <main className="bg-zinc-800 w-full flex flex-col items-center gap-3 pt-6 overflow-auto">
-          {history.map((msg, i) => (
+        <div className="w-full flex">
+          <main className="w-2/3 bg-zinc-800 flex flex-col items-center gap-3 pt-6 overflow-auto">
+            {history.map((msg, i) => (
+              <ChatMessage
+                key={i}
+                text={msg}
+                isUser={i % 2 == 1}
+                indicator={i % 2 == 0 && botIndicators[i]}
+              />
+            ))}
             <ChatMessage
-              key={i}
-              text={msg}
-              isUser={i % 2 == 1}
-              indicator={i % 2 == 0 && botIndicators[i]}
+              text={typedMessage}
+              isUser={isUserLast}
+              indicator={
+                isUserLast ? userIndicator : botIndicators[history.length]
+              }
             />
-          ))}
-          <ChatMessage
-            text={typedMessage}
-            isUser={isUserLast}
-            indicator={
-              isUserLast ? userIndicator : botIndicators[history.length]
-            }
-          />
-        </main>
+          </main>
+          <div className="w-1/3 bg-zinc-800">
+            <VideoRecorder />
+          </div>
+        </div>
       </div>
     </div>
   );
